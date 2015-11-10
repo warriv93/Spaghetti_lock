@@ -1,0 +1,41 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent" tools:context="com.example.simon.spaghettilock.fragments.fingerfrag">
+
+    <!-- TODO: Update blank fragment layout -->
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="PLACE YOUR FINGER"
+        android:id="@+id/textView3"
+        android:layout_gravity="center"
+        android:layout_marginBottom="25dp"
+        android:layout_above="@+id/textView4"
+        android:layout_centerHorizontal="true" />
+
+    <TextView
+        android:layout_width="272dp"
+        android:layout_height="198dp"
+        android:textAlignment="center"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Use the fingerprint reader on your phone to unlock the computer."
+        android:id="@+id/textView4"
+        android:layout_gravity="center_horizontal|bottom"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true" />
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/imageViewFinger"
+        android:minHeight="130dp"
+        android:minWidth="130dp"
+        android:src="@mipmap/finger_image"
+        android:layout_gravity="center_horizontal|top"
+        android:layout_marginBottom="67dp"
+        android:layout_above="@+id/textView3"
+        android:layout_centerHorizontal="true" />
+
+</RelativeLayout>
