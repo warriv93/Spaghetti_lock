@@ -36,6 +36,7 @@ import threading
 import signal
 import syslog
 import locale
+import socket
 
 
 #Translation stuff
@@ -752,6 +753,7 @@ class Proximity (threading.Thread):
         nearby_devices = bluetooth.discover_devices()
         for bdaddr in nearby_devices:
             ret_tab.append([str(bdaddr),str(bluetooth.lookup_name( bdaddr ))])
+            self.logger.log_line('Found ' + str(bluetooth.lookup_name( bdaddr )))
         return ret_tab
 
     def kill_connection(self):
@@ -788,6 +790,7 @@ class Proximity (threading.Thread):
             pkt = sock.recv(255)
             ptype, event, plen = struct.unpack("BBB", pkt[:3])
             if event == bluez.EVT_INQUIRY_RESULT_WITH_RSSI:
+                print 'Received EVT_INQUIRY_RESULT_WITH_RSSI'
                 pkt = pkt[3:]
                 nrsp = struct.unpack("B", pkt[0])[0]
                 for i in range(nrsp):
@@ -796,8 +799,10 @@ class Proximity (threading.Thread):
                     results.append( ( addr, rssi ) )
                     print "[%s] RSSI: [%d]" % (addr, rssi)
             elif event == bluez.EVT_INQUIRY_COMPLETE:
+                print 'Received EVT_INQUIRY_COMPLETE'
                 done = True
             elif event == bluez.EVT_CMD_STATUS:
+                print 'Received EVT_CMD_STATUS'
                 status, ncmd, opcode = struct.unpack("BBH", pkt[3:7])
                 if status != 0:
                     print "uh oh..."
@@ -817,7 +822,9 @@ class Proximity (threading.Thread):
     def get_proximity_once(self,dev_mac):
         # returns all active bluetooth devices found
         # this should also be removed but I still have to find a way to read the rssi value from python
+        # hcitool rssi displays the received signal strength of the device with dev_mac.
         ret_val = os.popen("hcitool rssi " + dev_mac + " 2>/dev/null").readlines()
+        #print 'rssi returned ' + ', '.join(ret_val)
         if ret_val == []:
             ret_val = -255
         else:
@@ -844,6 +851,40 @@ class Proximity (threading.Thread):
         # take some time to connect (only when using spawnv)
         #time.sleep(5)
         return self.procid
+        
+    def send_ping(self,dev_mac):
+        
+        port = 3
+        L2CAP_ECHO_REQ = 0x08
+        L2CAP_ECHO_RSP = 0x09
+
+        s = socket.socket(socket.AF_BLUETOOTH, socket.SOCK_RAW, socket.BTPROTO_L2CAP)
+        s.connect((dev_mac, port))
+        
+        header = bytearray([0x08, 0x00, 0x20, 0x0, \
+        0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38,\
+        0x39, 0x3a, 0x3b, 0x3c, 0x3d, 0x3e, 0x3f, 0x40,
+        0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48,\
+        0x49, 0x4a, 0x4b, 0x4c, 0x4d, 0x4e, 0x4f, 0x50])
+        s.send(header)
+        s.close()
+
+    def create_connection(self, dev_mac):
+    
+        s = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
+        s.bind((hostMACAddress, port))
+        s.listen(backlog)
+        try:
+            client, clientInfo = s.accept()
+            while 1:
+                data = client.recv(size)
+                if data:
+                    print(data)
+                    client.send(data) # Echo back to client
+        except:	
+            print("Closing socket")
+            client.close()
+            s.close()
 
     def run_cycle(self,dev_mac,dev_channel):
         # reads the distance and averages it over the ringbuffer
@@ -854,7 +895,7 @@ class Proximity (threading.Thread):
             ret_val = ret_val + val
         if self.ringbuffer[self.ringbuffer_pos] == -255:
             self.ErrorMsg = _("No connection found, trying to establish one...")
-            #print "I can't find my master. Will try again..."
+            print "I can't find my master. Will try again..."
             self.kill_connection()
             self.get_connection(dev_mac,dev_channel)
         return int(ret_val / self.ringbuffer_size)
@@ -908,12 +949,14 @@ class Proximity (threading.Thread):
                                 self.go_gone()
                     else:
                         duration_count = 0                    
-                if dist != self.Dist or state != self.State:
-                    #print "Detected distance atm: " + str(dist) + "; state is " + state
+                #if dist != self.Dist or state != self.State:
+                if 1:
+                    print "Detected distance atm: " + str(dist) + "; state is " + state
                     pass
                 self.State = state
                 self.Dist = dist
                 time.sleep(1)
+                #self.send_ping(self.dev_mac)
             except KeyboardInterrupt:
                 break
         self.kill_connection()
@@ -928,23 +971,28 @@ if __name__=='__main__':
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     # read config if any
     new_config = False
+    config_file = os.getenv('HOME') + '/.blueproximity/standard.conf'
     try:
-        config = ConfigObj(os.getenv('HOME') + '/.blueproximityrc',{'create_empty':False,'file_error':True,'configspec':conf_specs})
+        config = ConfigObj(config_file,{'create_empty':False,'file_error':True,'configspec':conf_specs})
     except:
         new_config = True
     if new_config:
-        config = ConfigObj(os.getenv('HOME') + '/.blueproximityrc',{'create_empty':True,'file_error':False,'configspec':conf_specs})
+        config = ConfigObj(config_file,{'create_empty':True,'file_error':False,'configspec':conf_specs})
+        print 'No config in ' + config_file
+        print 'Creating new config...'
         # next line fixes a problem with creating empty strings in default values for configobj
         config['device_mac'] = ''
+    else:
+        print 'Found config in ' + config_file
     vdt = Validator()
     config.validate(vdt, copy=True)
     config.write()
     
     p = Proximity(config)
     p.start()
-    pGui = ProximityGUI(p,config,new_config)
+    #pGui = ProximityGUI(p,config,new_config)
 
     # make GTK threadable 
-    gtk.gdk.threads_init()
-    gtk.main()
+    #gtk.gdk.threads_init()
+    #gtk.main()
     
