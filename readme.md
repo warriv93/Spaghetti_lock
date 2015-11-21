@@ -41,9 +41,24 @@ You can also play around with the other settings like lock_distance and lock_dur
 
 ## PC app
 
-The PC part of Spaghetti Lock is based on blueproximity.
+The PC part of Spaghetti Lock is written in C++. It's a small application which runs in the background as a bluetooth server and waits for incoming connections. 
 
-describe PC app here...
+You can compile the program only on Ubuntu. Go to the the directory "<your_path_to_this_repo>/pc/gcc" and enter
+
+```
+make
+```
+
+If you you compile it for the first time, you may need to install some additional libraries/programs:
+```
+sudo apt-get install libbluetooth-dev
+sudo apt-get install g++
+```
+
+To run the program, enter
+```
+./ms_lock
+```
 
 ## Smartphone app
 
