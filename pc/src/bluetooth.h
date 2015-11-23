@@ -33,5 +33,6 @@ private:
   
   Logger *m_log;
   int m_sock;
+
 };
 
