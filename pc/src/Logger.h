@@ -15,7 +15,7 @@ public:
 
   void Debug(string msg);
 	void Info(string msg);
-	void Info(char * msg);
+	//void Info(char * msg);
   void Error(string msg);
 	void Error(std::exception *e);
 

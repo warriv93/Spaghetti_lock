@@ -1,5 +1,4 @@
 #include "Logger.h"
-#include <mutex>
 
 using namespace std;
 
@@ -46,6 +45,7 @@ void Logger::Info(string msg){
   }
 }
 
+/*
 void Logger::Info(char * msg){
 
   if (m_level >= logLevelInfo) {
@@ -54,6 +54,7 @@ void Logger::Info(char * msg){
     unlock();
   }
 }
+*/
 
 void Logger::Debug(string msg) {
 
