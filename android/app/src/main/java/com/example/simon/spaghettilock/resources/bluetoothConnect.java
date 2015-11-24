@@ -22,9 +22,6 @@ import java.util.UUID;
  */
 public class bluetoothConnect extends Thread {
         private final BluetoothSocket mmSocket;
-        private final InputStream mmInStream;
-        private final OutputStream mmOutStream;
-        byte[] buffer;
 
         // Unique UUID for this application, you may use different
         private static final UUID MY_UUID = UUID
@@ -40,96 +37,55 @@ public class bluetoothConnect extends Thread {
             try {
                 tmp = device.createRfcommSocketToServiceRecord(MY_UUID);
             } catch (IOException e) {
-                Log.d("CONNECTTHREAD","Could not create RFCOMM socket: " + e.toString());
+                Log.d("CONNECTTHREAD", "Could not create RFCOMM socket: " + e.toString());
                 e.printStackTrace();
             }
             mmSocket = tmp;
-
+        }
             //now make the socket connection in separate thread to avoid FC
-            Thread connectionThread  = new Thread(new Runnable() {
-
-                @Override
-                public void run() {
+            public void run() {
                     // Always cancel discovery because it will slow down a connection
                     MainActivity.mBluetoothAdapter.cancelDiscovery();
 
                     // Make a connection to the BluetoothSocket
                     try {
+                        Log.i("TEST", "Listening for a connection...");
+
                         // This is a blocking call and will only return on a
                         // successful connection or an exception
                         mmSocket.connect();
+                        Log.d("TEST", "Connected to " + mmSocket.getRemoteDevice().getName());
+
                         Log.d("TEST", "SUCCESSFULLY CONNECTED!" );
                     } catch (IOException e) {
                         //connection to device failed so close the socket
+                        Log.d("TEST", e.getMessage());
+                        Log.d("TEST", "EPIC FAIL!" );
+
                         try {
                             mmSocket.close();
+                            Log.d("TEST", "SOCKET CLOSED!");
+
                         } catch (IOException e2) {
                             Log.d("CONNECT THREAD", "Could not close connection: " + e.toString());
                             e2.printStackTrace();
                         }
                     }
-                }
-            });
-
-            connectionThread.start();
-
-            InputStream tmpIn = null;
-            OutputStream tmpOut = null;
-
-            // Get the BluetoothSocket input and output streams
-            try {
-                tmpIn = mmSocket.getInputStream();
-                tmpOut = mmSocket.getOutputStream();
-                buffer = new byte[1024];
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            mmInStream = tmpIn;
-            mmOutStream = tmpOut;
-        }
-
-
-
-        public void run() {
-
-            // Keep listening to the InputStream while connected
-            while (true) {
-                try {
-                    int bytes;
-                    //read the data from socket stream
-                    bytes = mmInStream.read(buffer);
-
-
-//                    byte[] byteArray = new byte[](bytes);
-                     String response = Arrays.toString(buffer);
-
-                    Log.d("TEST", response);
-
-                    // Send the obtained bytes to the UI Activity
-                } catch (IOException e) {
-                    //an exception here marks connection loss
-                    //send message to UI Activity
-                    break;
+                if (mmSocket.isConnected()) {
+                    ConnectedThread mConnectedThread = new ConnectedThread(mmSocket);
+                    mConnectedThread.start();
+                }else{
+                    try {
+                        sleep(4000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
-        }
 
-        public void write(byte[] buffer) {
-            try {
-                //write the data to socket stream
-                mmOutStream.write(buffer);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        public void cancel() {
-            try {
-                mmSocket.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+    public void cancel() {
+        try {
+            mmSocket.close();
+        } catch (IOException e) { }
     }
-
+}

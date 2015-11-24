@@ -89,9 +89,9 @@ public class MainActivity extends Activity {
 
 
     public void startBluetoothThread(String adress) {
-//        Log.d("TEST", adress);
+        Log.d("TEST", adress);
         BluetoothDevice deviceAdress = mBluetoothAdapter.getRemoteDevice(adress);
-        Thread bt = new Thread(new bluetoothConnect(deviceAdress));
+        bluetoothConnect bt = new bluetoothConnect(deviceAdress);
         bt.start();
         Log.d("TEST", "THREAD STARTED");
 
