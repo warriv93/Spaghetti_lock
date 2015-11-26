@@ -1,6 +1,9 @@
 #pragma once
 #include <Logger.h>
 
+#include <bluetooth/sdp.h>
+#include <bluetooth/sdp_lib.h>
+
 
 using namespace std;
 
@@ -18,6 +21,8 @@ class BT_Com {
 public:
 
   BT_Com(Logger *log);
+  
+  ~BT_Com();
 
   int init();
   
@@ -33,6 +38,8 @@ private:
   
   Logger *m_log;
   int m_sock;
+  
+  sdp_session_t* m_session;
 
 };
 

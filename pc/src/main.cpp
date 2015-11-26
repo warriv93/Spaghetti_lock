@@ -8,12 +8,23 @@
 
 #include <iostream>
 #include <stdlib.h>
+#include <signal.h>
 #include "Logger.h"
 #include "bluetooth.h"
+
+static int run = 1;
+
+void sig_handler(int signo) {
+
+  if (signo == SIGINT)
+    run = 0;
+}
 
 using namespace std;
 
 int main(int argc, const char * argv[]) {
+
+  //signal(SIGINT, sig_handler);
   
   Logger *log = Logger::getLogger();
   log->setLevel(Logger::logLevelDebug);
@@ -33,6 +44,8 @@ int main(int argc, const char * argv[]) {
     if (len) com->send(c, buf, len);
     com->closeConnection(c);
   }
+  
+  delete com;
   
   
   return 0;

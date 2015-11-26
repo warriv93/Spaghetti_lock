@@ -4,9 +4,7 @@ extern "C"
 {
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/rfcomm.h>
-#include <bluetooth/sdp.h>
 #include <bluetooth/sco.h>
-#include <bluetooth/sdp_lib.h>
 #include <bluetooth/l2cap.h>
 }
 
@@ -23,6 +21,13 @@ BT_Com::BT_Com(Logger *log) {
 
   m_log = log;
   m_sock = -1;
+}
+
+BT_Com::~BT_Com() {
+
+  m_log->Info("Closing socket...");
+  sdp_close(m_session);
+  close(m_sock);
 }
 
 sdp_session_t* registerService(uint8_t rfcomm_channel) {
@@ -92,8 +97,8 @@ sdp_session_t* registerService(uint8_t rfcomm_channel) {
 
 	// connect to the local SDP server, register the service record,
 	// and disconnect
-	const bdaddr_t any = {0, 0, 0, 0, 0, 0};
-	const bdaddr_t local = {0, 0, 0, 0xff, 0xff, 0xff}; // BDADDR_LOCAL
+	const bdaddr_t any = {{0, 0, 0, 0, 0, 0}};
+	const bdaddr_t local = {{0, 0, 0, 0xff, 0xff, 0xff}}; // BDADDR_LOCAL
 	session = sdp_connect(&any, &local, SDP_RETRY_IF_BUSY);
 	sdp_record_register(session, &record, 0);
 
@@ -111,8 +116,10 @@ sdp_session_t* registerService(uint8_t rfcomm_channel) {
 
 int BT_Com::init() {
 
-  uint8_t port = 3;
-  registerService(port);
+  uint8_t port = 1;
+  
+  m_session = registerService(port);
+  
   
   // allocate socket
   m_sock = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
@@ -133,6 +140,7 @@ int BT_Com::init() {
     m_log->Error("BT_Com: Can't bind to socket");
     return (-1);
   }
+  
   
   m_log->Info("BT_Com: Initalization complete");
   
