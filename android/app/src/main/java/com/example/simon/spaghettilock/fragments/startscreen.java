@@ -81,6 +81,10 @@ public class startscreen extends Fragment {
             String newinfo = info.substring(i).replaceAll(" ", "");
             Log.d("TEST", newinfo);
             ((MainActivity) getActivity()).startBluetoothThread(newinfo);
+            FragmentManager fm = getFragmentManager();
+            FragmentTransaction ft = fm.beginTransaction();
+            ft.replace(R.id.fragContainer, new welcome());
+            ft.commit();
 //            Log.d("TEST", infoSplit[1]);
         }
     }

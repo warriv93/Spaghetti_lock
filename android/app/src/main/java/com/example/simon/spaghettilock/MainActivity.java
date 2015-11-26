@@ -66,7 +66,6 @@ public class MainActivity extends Activity {
 //                    Toast.makeText(this, "\n  Device: " + device.getName() + ", " + device, Toast.LENGTH_SHORT).show();
 //                    deviceMacAdress = mBluetoothAdapter.getRemoteDevice(device.getAddress());
         }
-
     }
 
         final BroadcastReceiver bReceiver = new BroadcastReceiver() {

@@ -1,4 +1,4 @@
-CC=g++
+CC=/usr/bin/g++-4.8
 CFLAGS=-c -Wall
 LDFLAGS=
 

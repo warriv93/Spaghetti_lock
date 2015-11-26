@@ -46,14 +46,11 @@ public class welcome extends Fragment {
             @Override
             public void onClick(View view) {
                 //what to do onClick?
-
 //                //change to ACTIVITY
 //                Intent myIntent = new Intent(((MainActivity) getActivity()), LoginActivity.class);
 ////              send something to other activity
 ////               myIntent.putExtra("key", value); //Optional parameters
 //                ((MainActivity) getActivity()).startActivity(myIntent);
-
-
 //                change fragment
                 FragmentManager fm = getFragmentManager();
                 FragmentTransaction ft = fm.beginTransaction();
@@ -65,11 +62,16 @@ public class welcome extends Fragment {
         fingerbt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //what to do onClick?
-                FragmentManager fm = getFragmentManager();
+               /* FragmentManager fm = getFragmentManager();
                 FragmentTransaction ft = fm.beginTransaction();
                 ft.replace(R.id.fragContainer, new fingerfrag());
-                ft.commit();
+                ft.commit();*/
+
+
+                //on cick!
+
+
+
             }
         });
     }
