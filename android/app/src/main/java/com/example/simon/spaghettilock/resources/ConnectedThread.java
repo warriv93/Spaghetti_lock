@@ -1,17 +1,11 @@
 package com.example.simon.spaghettilock.resources;
 
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.bluetooth.BluetoothSocket;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
-
 import com.example.simon.spaghettilock.MainActivity;
-import com.example.simon.spaghettilock.R;
-import com.example.simon.spaghettilock.fragments.welcome;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -40,8 +34,11 @@ public class ConnectedThread extends Thread{
         mmInStream = tmpIn;
         mmOutStream = tmpOut;
     }
+
+    /**
+     * run = while thread is running
+     */
     public void run() {
-        //run = while thread is running
         Log.d("TEST", "ConnectedThread CREATED");
 
         byte[] buffer = new byte[1024];
@@ -79,7 +76,9 @@ public class ConnectedThread extends Thread{
         }
     }
 
-    /*  */
+    /**
+     *  Write to server
+     */
     public void write(byte[] bytes) {
         try {
             //save byte encoded with UTF-8 to a string to be able to print
@@ -90,13 +89,19 @@ public class ConnectedThread extends Thread{
         } catch (IOException e) { }
     }
 
-    //if connection fails close socket and go back to first fragment
+    /**
+     * if connection fails close socket and go back to first fragment
+     * */
     public void cancel() {
         try {
             mmSocket.close();
             ma.goBackToHome();
         } catch (IOException e) { }
     }
+
+    /**
+     * best practice to print msg from server to UI
+     */
     Handler mHandler = new Handler(Looper.getMainLooper()) {
 
         @Override
@@ -115,7 +120,10 @@ public class ConnectedThread extends Thread{
         }
     };
 
-
+    /**
+     * set MainActivity obj
+     * @param ma
+     */
     public void setMa(MainActivity ma) {
         this.ma = ma;
     }

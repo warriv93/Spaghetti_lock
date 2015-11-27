@@ -1,18 +1,13 @@
 package com.example.simon.spaghettilock.fragments;
 
 
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
-import android.content.Intent;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.ImageButton;
 
-import com.example.simon.spaghettilock.LoginActivity;
 import com.example.simon.spaghettilock.MainActivity;
 import com.example.simon.spaghettilock.R;
 import com.example.simon.spaghettilock.resources.ConnectedThread;
@@ -41,6 +36,10 @@ public class welcome extends Fragment {
         return view;
     }
 
+    /**
+     * change to either password fragment or fingerprint fragment depending on what button is pressed
+     * @param view
+     */
     private void init(View view) {
         Button pwbt = (Button) view.findViewById(R.id.startPw);
         pwbt.setOnClickListener(new View.OnClickListener() {
@@ -48,7 +47,6 @@ public class welcome extends Fragment {
             public void onClick(View view) {
 //                change fragment
                 ma.createpwFrag(ct);
-
             }
         });
         Button fingerbt = (Button) view.findViewById(R.id.startFinger);
@@ -60,20 +58,23 @@ public class welcome extends Fragment {
                 ft.replace(R.id.fragContainer, new fingerfrag());
                 ft.commit();*/
 
-
-                //on cick!
-
-
-
+                //on click!
             }
         });
     }
 
-
+    /**
+     *set ConnectedThread obj
+     * @param ct
+     */
     public void setCt(ConnectedThread ct) {
         this.ct = ct;
     }
 
+    /**
+     * set MainActivity obj
+     * @param ma
+     */
     public void setMa(MainActivity ma) {
         this.ma = ma;
     }
