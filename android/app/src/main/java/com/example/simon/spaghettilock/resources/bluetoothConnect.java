@@ -22,13 +22,14 @@ import java.util.UUID;
  */
 public class bluetoothConnect extends Thread {
         private final BluetoothSocket mmSocket;
-
+        private ConnectedThread mConnectedThread;
+    private MainActivity ma;
         // Unique UUID for this application, you may use different
         private static final UUID MY_UUID = UUID
                 .fromString("fa87c0d0-afac-11de-8a39-0800200c9a66");
 
-        public bluetoothConnect(BluetoothDevice device) {
-
+        public bluetoothConnect(BluetoothDevice device, MainActivity ma) {
+            this.ma = ma;
             Log.d("TEST", device.getAddress());
 
             BluetoothSocket tmp = null;
@@ -54,13 +55,14 @@ public class bluetoothConnect extends Thread {
                         // This is a blocking call and will only return on a
                         // successful connection or an exception
                         mmSocket.connect();
+
                         Log.d("TEST", "Connected to " + mmSocket.getRemoteDevice().getName());
 
-                        Log.d("TEST", "SUCCESSFULLY CONNECTED!" );
+                        Log.d("TEST", "SUCCESSFULLY CONNECTED!");
                     } catch (IOException e) {
                         //connection to device failed so close the socket
                         Log.d("TEST", e.getMessage());
-                        Log.d("TEST", "EPIC FAIL!" );
+                        Log.d("TEST", "EPIC FAIL!");
 
                         try {
                             mmSocket.close();
@@ -72,8 +74,10 @@ public class bluetoothConnect extends Thread {
                         }
                     }
                 if (mmSocket.isConnected()) {
-                    ConnectedThread mConnectedThread = new ConnectedThread(mmSocket);
+                    mConnectedThread = new ConnectedThread(mmSocket);
+                    mConnectedThread.setMa(ma);
                     mConnectedThread.start();
+                    ma.createWelcomefrag(mConnectedThread);
                 }else{
                     try {
                         sleep(4000);
@@ -86,6 +90,12 @@ public class bluetoothConnect extends Thread {
     public void cancel() {
         try {
             mmSocket.close();
+            mConnectedThread.cancel();
         } catch (IOException e) { }
     }
+
+    public boolean isConnected() {
+       return mmSocket.isConnected();
+    }
+
 }

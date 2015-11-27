@@ -19,11 +19,13 @@ import android.widget.ListView;
 
 import com.example.simon.spaghettilock.MainActivity;
 import com.example.simon.spaghettilock.R;
+import com.example.simon.spaghettilock.resources.ConnectedThread;
+import com.example.simon.spaghettilock.resources.bluetoothConnect;
 
 
 public class startscreen extends Fragment {
     private ListView btlv;
-
+    ConnectedThread ct;
     public startscreen() {
         // Required empty public constructor
     }
@@ -51,10 +53,7 @@ public class startscreen extends Fragment {
                 ((MainActivity) getActivity()).listDevices();
 
 //                    // move to next fragment
-//                FragmentManager fm = getFragmentManager();
-//                FragmentTransaction ft = fm.beginTransaction();
-//                ft.replace(R.id.fragContainer, new welcome());
-//                ft.commit();
+
             }
         });
     }
@@ -81,11 +80,7 @@ public class startscreen extends Fragment {
             String newinfo = info.substring(i).replaceAll(" ", "");
             Log.d("TEST", newinfo);
             ((MainActivity) getActivity()).startBluetoothThread(newinfo);
-            FragmentManager fm = getFragmentManager();
-            FragmentTransaction ft = fm.beginTransaction();
-            ft.replace(R.id.fragContainer, new welcome());
-            ft.commit();
-//            Log.d("TEST", infoSplit[1]);
+
         }
     }
 }

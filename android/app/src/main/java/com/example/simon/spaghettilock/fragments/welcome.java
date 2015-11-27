@@ -15,6 +15,7 @@ import android.widget.ImageButton;
 import com.example.simon.spaghettilock.LoginActivity;
 import com.example.simon.spaghettilock.MainActivity;
 import com.example.simon.spaghettilock.R;
+import com.example.simon.spaghettilock.resources.ConnectedThread;
 
 
 /**
@@ -23,12 +24,12 @@ import com.example.simon.spaghettilock.R;
  * A simple {@link Fragment} subclass.
  */
 public class welcome extends Fragment {
-    MainActivity ma;
+    private MainActivity ma;
+    private ConnectedThread ct;
 
     public welcome() {
         // Required empty public constructor
     }
-
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -45,17 +46,9 @@ public class welcome extends Fragment {
         pwbt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //what to do onClick?
-//                //change to ACTIVITY
-//                Intent myIntent = new Intent(((MainActivity) getActivity()), LoginActivity.class);
-////              send something to other activity
-////               myIntent.putExtra("key", value); //Optional parameters
-//                ((MainActivity) getActivity()).startActivity(myIntent);
 //                change fragment
-                FragmentManager fm = getFragmentManager();
-                FragmentTransaction ft = fm.beginTransaction();
-                ft.replace(R.id.fragContainer, new pwfrag());
-                ft.commit();
+                ma.createpwFrag(ct);
+
             }
         });
         Button fingerbt = (Button) view.findViewById(R.id.startFinger);
@@ -77,4 +70,11 @@ public class welcome extends Fragment {
     }
 
 
+    public void setCt(ConnectedThread ct) {
+        this.ct = ct;
+    }
+
+    public void setMa(MainActivity ma) {
+        this.ma = ma;
+    }
 }

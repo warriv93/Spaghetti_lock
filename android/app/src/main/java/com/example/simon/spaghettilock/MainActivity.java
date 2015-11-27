@@ -1,7 +1,6 @@
 package com.example.simon.spaghettilock;
 
 import android.app.Activity;
-import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.bluetooth.BluetoothAdapter;
@@ -10,19 +9,14 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-//import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
-import android.view.View;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.ListView;
 import android.widget.Toast;
-
+import com.example.simon.spaghettilock.fragments.pwfrag;
 import com.example.simon.spaghettilock.fragments.startscreen;
 import com.example.simon.spaghettilock.fragments.welcome;
+import com.example.simon.spaghettilock.resources.ConnectedThread;
 import com.example.simon.spaghettilock.resources.bluetoothConnect;
-
-import java.util.List;
 import java.util.Set;
 
 public class MainActivity extends Activity {
@@ -31,7 +25,7 @@ public class MainActivity extends Activity {
     private final static int REQUEST_ENABLE_BT = 1;
     public ArrayAdapter<String> BTArrayAdapter;
     public Set<BluetoothDevice> pairedDevices;
-
+    private bluetoothConnect bt;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -90,10 +84,27 @@ public class MainActivity extends Activity {
     public void startBluetoothThread(String adress) {
         Log.d("TEST", adress);
         BluetoothDevice deviceAdress = mBluetoothAdapter.getRemoteDevice(adress);
-        bluetoothConnect bt = new bluetoothConnect(deviceAdress);
+        bt = new bluetoothConnect(deviceAdress, this);
         bt.start();
         Log.d("TEST", "THREAD STARTED");
+    }
 
+    public void createWelcomefrag(ConnectedThread ct) {
+        FragmentManager fm = getFragmentManager();
+        FragmentTransaction ft = fm.beginTransaction();
+        welcome w = new welcome();
+        w.setCt(ct);
+        w.setMa(this);
+        ft.replace(R.id.fragContainer, w);
+        ft.commit();
+    }
+    public void createpwFrag(ConnectedThread ct) {
+        FragmentManager fm = getFragmentManager();
+        FragmentTransaction ft = fm.beginTransaction();
+        pwfrag pwFrag = new pwfrag();
+        pwFrag.setCt(ct);
+        ft.replace(R.id.fragContainer, pwFrag);
+        ft.commit();
     }
 
     public void CheckBluetoothState() {
@@ -127,5 +138,24 @@ public class MainActivity extends Activity {
         } else {
             super.onBackPressed();
         }
+    }
+
+    public void goBackToHome() {
+        FragmentManager fm = getFragmentManager();
+        FragmentTransaction ft = fm.beginTransaction();
+        ft.replace(R.id.fragContainer, new startscreen());
+        ft.commit();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        bt.cancel();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        goBackToHome();
     }
 }
