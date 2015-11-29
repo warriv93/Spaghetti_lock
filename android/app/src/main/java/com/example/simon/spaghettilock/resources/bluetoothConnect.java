@@ -1,34 +1,28 @@
 package com.example.simon.spaghettilock.resources;
 
-import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
-import android.content.Intent;
 import android.util.Log;
-import android.widget.Toast;
 
-import com.example.simon.spaghettilock.LoginActivity;
 import com.example.simon.spaghettilock.MainActivity;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.lang.reflect.Array;
-import java.util.Arrays;
 import java.util.UUID;
 
 /**
  * Created by simon on 15. 11. 7.
+ * This class represents the Thread that is created if a
  */
 public class bluetoothConnect extends Thread {
         private final BluetoothSocket mmSocket;
-
+        private ConnectedThread mConnectedThread;
+        private MainActivity ma;
         // Unique UUID for this application, you may use different
         private static final UUID MY_UUID = UUID
                 .fromString("fa87c0d0-afac-11de-8a39-0800200c9a66");
 
-        public bluetoothConnect(BluetoothDevice device) {
-
+        public bluetoothConnect(BluetoothDevice device, MainActivity ma) {
+            this.ma = ma;
             Log.d("TEST", device.getAddress());
 
             BluetoothSocket tmp = null;
@@ -42,8 +36,11 @@ public class bluetoothConnect extends Thread {
             }
             mmSocket = tmp;
         }
-            //now make the socket connection in separate thread to avoid FC
-            public void run() {
+
+    /**
+     *  now make the socket connection in separate thread to avoid problems
+     */
+    public void run() {
                     // Always cancel discovery because it will slow down a connection
                     MainActivity.mBluetoothAdapter.cancelDiscovery();
 
@@ -54,13 +51,14 @@ public class bluetoothConnect extends Thread {
                         // This is a blocking call and will only return on a
                         // successful connection or an exception
                         mmSocket.connect();
+
                         Log.d("TEST", "Connected to " + mmSocket.getRemoteDevice().getName());
 
-                        Log.d("TEST", "SUCCESSFULLY CONNECTED!" );
+                        Log.d("TEST", "SUCCESSFULLY CONNECTED!");
                     } catch (IOException e) {
                         //connection to device failed so close the socket
                         Log.d("TEST", e.getMessage());
-                        Log.d("TEST", "EPIC FAIL!" );
+                        Log.d("TEST", "EPIC FAIL!");
 
                         try {
                             mmSocket.close();
@@ -71,9 +69,12 @@ public class bluetoothConnect extends Thread {
                             e2.printStackTrace();
                         }
                     }
+        //finally if there is a connection the new thread is allowed to be created
                 if (mmSocket.isConnected()) {
-                    ConnectedThread mConnectedThread = new ConnectedThread(mmSocket);
+                    mConnectedThread = new ConnectedThread(mmSocket);
+                    mConnectedThread.setMa(ma);
                     mConnectedThread.start();
+                    ma.createWelcomefrag(mConnectedThread);
                 }else{
                     try {
                         sleep(4000);
@@ -83,9 +84,24 @@ public class bluetoothConnect extends Thread {
                 }
             }
 
+    /**
+     * close socket and cancel any connections already established
+     */
     public void cancel() {
         try {
-            mmSocket.close();
+            if (mmSocket.isConnected()) {
+                mConnectedThread.cancel();
+            }
+                mmSocket.close();
         } catch (IOException e) { }
     }
+
+    /**
+     * return if socket is connected
+     * @return
+     */
+    public boolean isConnected() {
+       return mmSocket.isConnected();
+    }
+
 }

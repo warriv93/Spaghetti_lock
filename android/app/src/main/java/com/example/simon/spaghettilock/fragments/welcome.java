@@ -1,20 +1,16 @@
 package com.example.simon.spaghettilock.fragments;
 
 
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
-import android.content.Intent;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.ImageButton;
 
-import com.example.simon.spaghettilock.LoginActivity;
 import com.example.simon.spaghettilock.MainActivity;
 import com.example.simon.spaghettilock.R;
+import com.example.simon.spaghettilock.resources.ConnectedThread;
 
 
 /**
@@ -23,12 +19,12 @@ import com.example.simon.spaghettilock.R;
  * A simple {@link Fragment} subclass.
  */
 public class welcome extends Fragment {
-    MainActivity ma;
+    private MainActivity ma;
+    private ConnectedThread ct;
 
     public welcome() {
         // Required empty public constructor
     }
-
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -40,22 +36,17 @@ public class welcome extends Fragment {
         return view;
     }
 
+    /**
+     * change to either password fragment or fingerprint fragment depending on what button is pressed
+     * @param view
+     */
     private void init(View view) {
         Button pwbt = (Button) view.findViewById(R.id.startPw);
         pwbt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //what to do onClick?
-//                //change to ACTIVITY
-//                Intent myIntent = new Intent(((MainActivity) getActivity()), LoginActivity.class);
-////              send something to other activity
-////               myIntent.putExtra("key", value); //Optional parameters
-//                ((MainActivity) getActivity()).startActivity(myIntent);
 //                change fragment
-                FragmentManager fm = getFragmentManager();
-                FragmentTransaction ft = fm.beginTransaction();
-                ft.replace(R.id.fragContainer, new pwfrag());
-                ft.commit();
+                ma.createpwFrag(ct);
             }
         });
         Button fingerbt = (Button) view.findViewById(R.id.startFinger);
@@ -67,14 +58,24 @@ public class welcome extends Fragment {
                 ft.replace(R.id.fragContainer, new fingerfrag());
                 ft.commit();*/
 
-
-                //on cick!
-
-
-
+                //on click!
             }
         });
     }
 
+    /**
+     *set ConnectedThread obj
+     * @param ct
+     */
+    public void setCt(ConnectedThread ct) {
+        this.ct = ct;
+    }
 
+    /**
+     * set MainActivity obj
+     * @param ma
+     */
+    public void setMa(MainActivity ma) {
+        this.ma = ma;
+    }
 }

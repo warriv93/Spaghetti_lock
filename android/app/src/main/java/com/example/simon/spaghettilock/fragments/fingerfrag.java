@@ -20,7 +20,7 @@ import com.example.simon.spaghettilock.R;
  * A simple {@link Fragment} subclass.
  */
 public class fingerfrag extends Fragment {
-
+    private MainActivity ma;
 
     public fingerfrag() {
         // Required empty public constructor
@@ -41,10 +41,17 @@ public class fingerfrag extends Fragment {
         ib.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(((MainActivity) getActivity()), "Place your finger on the scanner!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(ma, "Place your finger on the scanner!", Toast.LENGTH_SHORT).show();
             }
 
         });
     }
 
+    /**
+     * set MainActivity obj
+     * @param ma
+     */
+    public void setMa(MainActivity ma) {
+        this.ma = ma;
+    }
 }

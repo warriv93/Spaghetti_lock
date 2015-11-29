@@ -19,10 +19,13 @@ import android.widget.ListView;
 
 import com.example.simon.spaghettilock.MainActivity;
 import com.example.simon.spaghettilock.R;
+import com.example.simon.spaghettilock.resources.ConnectedThread;
+import com.example.simon.spaghettilock.resources.bluetoothConnect;
 
 
 public class startscreen extends Fragment {
     private ListView btlv;
+    private MainActivity ma;
 
     public startscreen() {
         // Required empty public constructor
@@ -40,25 +43,30 @@ public class startscreen extends Fragment {
 
     private void init(View view) {
         btlv = (ListView) view.findViewById(R.id.lv);
-        btlv.setAdapter(((MainActivity) getActivity()).BTArrayAdapter);
+        btlv.setAdapter(ma.BTArrayAdapter);
         btlv.setOnItemClickListener(new btlvListener());
 
-
         Button btConnect = (Button) view.findViewById(R.id.btConnect);
+        //on button click create list and list all paired devices
         btConnect.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                ((MainActivity) getActivity()).listDevices();
-
-//                    // move to next fragment
-//                FragmentManager fm = getFragmentManager();
-//                FragmentTransaction ft = fm.beginTransaction();
-//                ft.replace(R.id.fragContainer, new welcome());
-//                ft.commit();
+                ma.listDevices();
             }
         });
     }
 
+    /**
+     * set MainActivity obj
+     * @param ma
+     */
+    public void setMa(MainActivity ma) {
+        this.ma = ma;
+    }
+
+    /**
+     * on list item click send device address and start bluetooth listening thread
+     */
     private class btlvListener implements AdapterView.OnItemClickListener {
         @Override
         public void onItemClick(AdapterView<?> parent, View view,
@@ -81,11 +89,7 @@ public class startscreen extends Fragment {
             String newinfo = info.substring(i).replaceAll(" ", "");
             Log.d("TEST", newinfo);
             ((MainActivity) getActivity()).startBluetoothThread(newinfo);
-            FragmentManager fm = getFragmentManager();
-            FragmentTransaction ft = fm.beginTransaction();
-            ft.replace(R.id.fragContainer, new welcome());
-            ft.commit();
-//            Log.d("TEST", infoSplit[1]);
+
         }
     }
 }
