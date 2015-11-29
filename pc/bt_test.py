@@ -18,7 +18,7 @@ advertise_service( server_sock, "spaghetti_lock",
     profiles = [ SERIAL_PORT_PROFILE ]
 )
 
-print "Waiting for connection on RFCOMM channel %d" % port
+print ("Waiting for connection on RFCOMM channel %d" % port)
 
 try:
   # Enter the while loop and listen for connections
@@ -27,12 +27,12 @@ try:
 		
 		# Check the client address. If we don't know it, we just close the connection
 		if not any(client_info[0] in s for s in accepted_clients): 
-			print "Denied connection from ", client_info
+			print ("Denied connection from ", client_info)
 			client_sock.close()
 			continue
 		
 		# Ok, we got a connection request. Accept it and send welcome message.
-		print "Accepted connection from ", client_info
+		print ("Accepted connection from ", client_info)
 		client_sock.settimeout(10.0)
 		
 		try:
@@ -40,12 +40,15 @@ try:
 				while True:
 						data = client_sock.recv(1024)
 						if len(data) == 0: break
-						print "received [%s]" % data
-						client_sock.send(data)
+						print ("received [%s]" % data)
+						#client_sock.send(data)
+						dk = hashlib.pbkdf2_hmac('sha1', data, b'salt', 100000)
+						hash = binascii.hexlify(dk)
+						print (hash)
 		except IOError:
 				pass
 
-		print "disconnected", client_info
+		print ("disconnected", client_info)
 
 		client_sock.close()
 	
@@ -54,4 +57,4 @@ except KeyboardInterrupt:
 	stop_advertising(server_sock)
 	server_sock.close()
 
-print "all done"
+print ("all done")
