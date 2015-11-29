@@ -5,9 +5,12 @@ import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 import com.example.simon.spaghettilock.fragments.pwfrag;
@@ -38,10 +41,33 @@ public class MainActivity extends Activity {
      * init arrayadapter for list
      */
     private void initVariables() {
-        goBackToHome();
+       createHomeFrag();
         //init array adapter for list
         BTArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1);
 
+    }
+
+    /**
+     * Check if phone has a bluetooth adapter
+     * if it's turned of: turn it on
+     */
+    public void CheckBluetoothState() {
+        //inti adapter
+        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (mBluetoothAdapter == null) {
+            // Device does not support Bluetooth
+            Toast.makeText(this, "This device does not support Bluetooth.", Toast.LENGTH_SHORT).show();
+        }
+        //force start bluetooth adapter
+        if (!mBluetoothAdapter.isEnabled()) {
+            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+            Toast.makeText(getApplicationContext(),"Bluetooth is now enabled.",
+                    Toast.LENGTH_LONG).show();
+        } else {
+            Toast.makeText(getApplicationContext(), "Bluetooth is enabled.",
+                    Toast.LENGTH_LONG).show();
+        }
     }
 
     /**
@@ -79,7 +105,7 @@ public class MainActivity extends Activity {
         w.setCt(ct);
         w.setMa(this);
         ft.replace(R.id.fragContainer, w);
-        ft.commit();
+        ft.addToBackStack(null).commit();
     }
     /**
      * change fragment to password fragment
@@ -89,60 +115,30 @@ public class MainActivity extends Activity {
         FragmentTransaction ft = fm.beginTransaction();
         pwfrag pwFrag = new pwfrag();
         pwFrag.setCt(ct);
+        pwFrag.setMa(this);
         ft.replace(R.id.fragContainer, pwFrag);
-        ft.commit();
-    }
-
-    /**
-     * Check if phone has a bluetooth adapter
-     * if it's turned of: turn it on
-     */
-    public void CheckBluetoothState() {
-        //inti adapter
-        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        if (mBluetoothAdapter == null) {
-            // Device does not support Bluetooth
-            Toast.makeText(this, "This device does not support Bluetooth.", Toast.LENGTH_SHORT).show();
-        } else {
-            if (mBluetoothAdapter.isEnabled()) {
-
-                Toast.makeText(this, "\n" +
-                        "Bluetooth is enabled.", Toast.LENGTH_SHORT).show();
-            }
-        }
-        //force start bluetooth adapter
-       if (!mBluetoothAdapter.isEnabled()) {
-            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-            Toast.makeText(getApplicationContext(),"Bluetooth is now enabled.",
-                    Toast.LENGTH_LONG).show();
-        } else {
-            Toast.makeText(getApplicationContext(), "Bluetooth is enabled.",
-                    Toast.LENGTH_LONG).show();
-        }
-    }
-
-    @Override
-    public void onBackPressed() {
-        if (getFragmentManager().getBackStackEntryCount() > 0) {
-            getFragmentManager().popBackStack();
-        } else {
-            super.onBackPressed();
-        }
+        ft.addToBackStack(null).commit();
     }
 
     /**
      * change fragment to startscreen
      */
-    public void goBackToHome() {
-        // get fragment manager
+    public void createHomeFrag() {
         FragmentManager fm = getFragmentManager();
-        // add fragment to startscreen holder
         FragmentTransaction ft = fm.beginTransaction();
         startscreen sc = new startscreen();
-        sc.setMa(this);
-        ft.add(R.id.fragContainer, new startscreen());
-        ft.commit();
+        ft.replace(R.id.fragContainer, sc).addToBackStack(null).commit();
+    }
+
+
+    @Override
+    public void onBackPressed() {
+        if(getFragmentManager().getBackStackEntryCount() == 0) {
+            super.onBackPressed();
+        }
+        else {
+            getFragmentManager().popBackStack();
+        }
     }
 
     /**
@@ -161,6 +157,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        goBackToHome();
+        createHomeFrag();
+
     }
 }

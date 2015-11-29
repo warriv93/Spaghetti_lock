@@ -95,7 +95,7 @@ public class ConnectedThread extends Thread{
     public void cancel() {
         try {
             mmSocket.close();
-            ma.goBackToHome();
+            ma.createHomeFrag();
         } catch (IOException e) { }
     }
 
