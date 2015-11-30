@@ -2,6 +2,7 @@ package com.example.simon.spaghettilock.fragments;
 
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.Fragment;
@@ -12,16 +13,20 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.example.simon.spaghettilock.MainActivity;
 import com.example.simon.spaghettilock.R;
 import com.example.simon.spaghettilock.resources.ConnectedThread;
 
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
@@ -42,10 +47,13 @@ import javax.crypto.spec.SecretKeySpec;
  * A simple {@link Fragment} subclass.
  */
 public class pwfrag extends Fragment {
-    final ProgressDialog showProgress = ProgressDialog.show(getActivity(), "", "Please wait, Loading Page...", true);
+    private MainActivity ma;
+   // private final ProgressDialog showProgress = ProgressDialog.show(ma, "", "Please wait, Loading Page...", true);
     private EditText pwet;
     private UserLoginTask mAuthTask = null;
     private ConnectedThread ct;
+    final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
+
 
     public pwfrag() {
         // Required empty public constructor
@@ -79,7 +87,7 @@ public class pwfrag extends Fragment {
         btUnlock.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                attemptLogin();
+                attemptLogin(view);
             }
         });
 
@@ -88,12 +96,13 @@ public class pwfrag extends Fragment {
     /**
      * attempting the unlock by sending the password to connected server in salted hash
      */
-    private void attemptLogin() {
+    private void attemptLogin(View view) {
         // Reset errors.
         pwet.setError(null);
 
         // Store values at the time of the inputed password
         String password = pwet.getText().toString();
+        pwet.setText("");
         boolean cancel = false;
         View focusView = null;
 
@@ -104,7 +113,6 @@ public class pwfrag extends Fragment {
             cancel = true;
         }
 
-
         if (cancel) {
             // There was an error; don't attempt login and focus the first
             // form field with an error.
@@ -112,30 +120,51 @@ public class pwfrag extends Fragment {
         } else {
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
-            showProgress.show();
-            mAuthTask = new UserLoginTask(password);
+            //showProgress.show();
 
-            //            mAuthTask.execute((Void) null);
+
+
+
+         /*   try {
+
+                int iterationCount = 10000;
+                int keyLength = 256;
+                int saltLength = keyLength / 8; // same size as key output
+
+                SecureRandom random = new SecureRandom();
+                //byte[] salt = new byte[saltLength];
+
+                String str = "salt";
+                byte[] salt = str.getBytes();
+                //random.nextBytes(salt);
+                KeySpec keySpec = new PBEKeySpec(password.toCharArray(), salt,
+                        iterationCount, keyLength);
+                SecretKeyFactory keyFactory = SecretKeyFactory
+                        .getInstance("PBKDF2WithHmacSHA1");
+
+                byte[] keyBytes = keyFactory.generateSecret(keySpec).getEncoded();
+                SecretKey key = new SecretKeySpec(keyBytes, "AES");
+
+                Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+                byte[] iv = new byte[cipher.getBlockSize()];
+                random.nextBytes(iv);
+                IvParameterSpec ivParams = new IvParameterSpec(iv);
+                cipher.init(Cipher.ENCRYPT_MODE, key, ivParams);
+                //Log.d("TEST","before cipher:  "+password);
+                byte[] ciphertext = cipher.doFinal(plaintext.getBytes("UTF-8"));
+*/
+
+
+            mAuthTask = new UserLoginTask(password);
+            mAuthTask.execute((Void) null);
+            if (view != null) {
+                InputMethodManager imm = (InputMethodManager)ma.getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+            }
         }
     }
 
-    /**
-     * check if the entered password is 4 chars or longer
-     * @param password
-     * @return
-     */
-    private boolean isPasswordValid(String password) {
-        //TODO: Replace this with your own logic
-        return password.length() >= 4;
-    }
 
-    /**
-     * set ConnectedThread obj
-     * @param ct
-     */
-    public void setCt(ConnectedThread ct) {
-        this.ct = ct;
-    }
 
 
     /**
@@ -154,81 +183,41 @@ public class pwfrag extends Fragment {
 
         @Override
         protected Boolean doInBackground(Void... params) {
-            // TODO: attempt authentication against a network service.
-
-            try {
-
+            // attempt authentication against server.
                 try {
+                    char[] chars = mPassword.toCharArray();
+                    byte[] salt = "salt".getBytes();
+                    //getSalt();
 
-                    int iterationCount = 1000;
-                    int keyLength = 256;
-                    int saltLength = keyLength / 8; // same size as key output
-
-                    SecureRandom random = new SecureRandom();
-                    //byte[] salt = new byte[saltLength];
-
-                    String str = "salt";
-                    byte[] salt = str.getBytes();
-                    //random.nextBytes(salt);
-                    KeySpec keySpec = new PBEKeySpec(mPassword.toCharArray(), salt,
-                            iterationCount, keyLength);
-                    SecretKeyFactory keyFactory = SecretKeyFactory
+                    PBEKeySpec spec = new PBEKeySpec(chars, salt, 1000,
+                            20 * Byte.SIZE);
+                    SecretKeyFactory skf = SecretKeyFactory
                             .getInstance("PBKDF2WithHmacSHA1");
+                    byte[] hash = skf.generateSecret(spec).getEncoded();
 
-                    byte[] keyBytes = keyFactory.generateSecret(keySpec).getEncoded();
-                    SecretKey key = new SecretKeySpec(keyBytes, "AES");
+                    MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
+                    hash = sha256.digest();
 
-                    Cipher cipher = null;
-                    cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+                    //return toHex(salt) + ":" + toHex(hash);
 
-                    byte[] iv = new byte[cipher.getBlockSize()];
-                    random.nextBytes(iv);
-                    IvParameterSpec ivParams = new IvParameterSpec(iv);
-                    cipher.init(Cipher.ENCRYPT_MODE, key, ivParams);
-                    Log.d("TEST","before cipher:  "+mPassword);
-                    byte[] ciphertext = cipher.doFinal(mPassword.getBytes("UTF-8"));
+                    String res = toHex(hash);
+                    Log.d("test", "after cipher:  : " + res);
 
                     //send final hashed pw to pc
-                    ct.write(ciphertext);
-                    Log.d("TEST: " , "after cipher:  "+ciphertext.toString());
-                } catch (NoSuchAlgorithmException e) {
-                    e.printStackTrace();
-                } catch (NoSuchPaddingException e) {
-                    e.printStackTrace();
-                } catch (BadPaddingException e) {
-                    e.printStackTrace();
-                } catch (InvalidKeyException e) {
-                    e.printStackTrace();
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                } catch (IllegalBlockSizeException e) {
-                    e.printStackTrace();
-                } catch (InvalidAlgorithmParameterException e) {
-                    e.printStackTrace();
-                } catch (InvalidKeySpecException e) {
-                    e.printStackTrace();
+                    ct.write(hash);
+                    Toast.makeText(ma, "Password successfully sent to PC!", Toast.LENGTH_SHORT).show();
+
+                } catch (Exception e) {
+                    System.out.println("Exception: Error in generating password"
+                            + e.toString());
                 }
-
-
-
-
-                // Simulate network access.
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                return false;
-            }
-
-            //write password to pc
-           // ct.write(mPassword.getBytes());
-
-            // TODO: register the new account here.
             return true;
         }
 
         @Override
         protected void onPostExecute(final Boolean success) {
             mAuthTask = null;
-          showProgress.dismiss();
+          //showProgress.dismiss();
 
             if (success) {
                 //finish();
@@ -241,9 +230,41 @@ public class pwfrag extends Fragment {
         @Override
         protected void onCancelled() {
             mAuthTask = null;
-            showProgress.dismiss();
+           // showProgress.dismiss();
         }
     }
 
+/**
+ * translate input byte array to hex
+ */
+    public static String toHex(byte[] bytes) {
+        char[] hexChars = new char[bytes.length * 2];
+        for ( int j = 0; j < bytes.length; j++ ) {
+            int v = bytes[j] & 0xFF;
+            hexChars[j * 2] = hexArray[v >>> 4];
+            hexChars[j * 2 + 1] = hexArray[v & 0x0F];
+        }
+        return new String(hexChars);
+    }
 
+    /**
+     * check if the entered password is 4 chars or longer
+     * @param password
+     * @return
+     */
+    private boolean isPasswordValid(String password) {
+        return password.length() >= 4;
+    }
+
+    /**
+     * set ConnectedThread obj
+     * @param ct
+     */
+    public void setCt(ConnectedThread ct) {
+        this.ct = ct;
+    }
+
+    public void setMa(MainActivity ma) {
+        this.ma = ma;
+    }
 }
