@@ -1,47 +1,23 @@
 package com.example.simon.spaghettilock.fragments;
 
-
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.Fragment;
-import android.text.TextUtils;
+import android.os.Looper;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
-
 import com.example.simon.spaghettilock.MainActivity;
 import com.example.simon.spaghettilock.R;
 import com.example.simon.spaghettilock.resources.ConnectedThread;
-
-import java.io.UnsupportedEncodingException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.KeySpec;
-
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.PBEKeySpec;
-import javax.crypto.spec.SecretKeySpec;
-
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -70,7 +46,9 @@ public class pwfrag extends Fragment {
     }
 
     private void inti(View view) {
+        ma = (MainActivity) getActivity();
         pwet = (EditText) view.findViewById(R.id.password);
+        //pwet.setText("passwordpassword");
 //        pwet.setOnEditorActionListener(new TextView.OnEditorActionListener() {
 //            @Override
 //            public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
@@ -122,39 +100,6 @@ public class pwfrag extends Fragment {
             // perform the user login attempt.
             //showProgress.show();
 
-
-
-
-         /*   try {
-
-                int iterationCount = 10000;
-                int keyLength = 256;
-                int saltLength = keyLength / 8; // same size as key output
-
-                SecureRandom random = new SecureRandom();
-                //byte[] salt = new byte[saltLength];
-
-                String str = "salt";
-                byte[] salt = str.getBytes();
-                //random.nextBytes(salt);
-                KeySpec keySpec = new PBEKeySpec(password.toCharArray(), salt,
-                        iterationCount, keyLength);
-                SecretKeyFactory keyFactory = SecretKeyFactory
-                        .getInstance("PBKDF2WithHmacSHA1");
-
-                byte[] keyBytes = keyFactory.generateSecret(keySpec).getEncoded();
-                SecretKey key = new SecretKeySpec(keyBytes, "AES");
-
-                Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-                byte[] iv = new byte[cipher.getBlockSize()];
-                random.nextBytes(iv);
-                IvParameterSpec ivParams = new IvParameterSpec(iv);
-                cipher.init(Cipher.ENCRYPT_MODE, key, ivParams);
-                //Log.d("TEST","before cipher:  "+password);
-                byte[] ciphertext = cipher.doFinal(plaintext.getBytes("UTF-8"));
-*/
-
-
             mAuthTask = new UserLoginTask(password);
             mAuthTask.execute((Void) null);
             if (view != null) {
@@ -184,31 +129,45 @@ public class pwfrag extends Fragment {
         @Override
         protected Boolean doInBackground(Void... params) {
             // attempt authentication against server.
-                try {
+            Looper.prepare();
+            try {
                     char[] chars = mPassword.toCharArray();
-                    byte[] salt = "salt".getBytes();
+                    byte[] salt = "momsspaghetti".getBytes();
                     //getSalt();
 
-                    PBEKeySpec spec = new PBEKeySpec(chars, salt, 1000,
-                            20 * Byte.SIZE);
+                //char array of password, byte array of salt, 10000 iterations, 512 bits (64bytes)
+                   /* PBEKeySpec spec = new PBEKeySpec(chars, salt, 10000,
+                           512);
                     SecretKeyFactory skf = SecretKeyFactory
                             .getInstance("PBKDF2WithHmacSHA1");
                     byte[] hash = skf.generateSecret(spec).getEncoded();
+                   // String res1 = toHex(hash);
+                    String res1 = new String(hash, "UTF-8");
+                    Log.d("test", "before cipher:  : " + res1);
+                        */
 
-                    MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
-                    hash = sha256.digest();
+                    //TIME
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
+                    String currentDateandTime = sdf.format(new Date());
+                    String pwtime = currentDateandTime;
 
-                    //return toHex(salt) + ":" + toHex(hash);
+                    /*
+                    //merges 2 byte[] together
+                    byte[] one = "#magic#".getBytes();
+                    byte[] two = hash;
+                    String str = new String(one, "UTF-8");
+                    Log.d("test", "magic?: " + one);
+                    byte[] combined = new byte[one.length + two.length];
+                    for (int i = 0; i < combined.length; ++i){
+                        combined[i] = i < one.length ? one[i] : two[i - one.length];
+                    }*/
+                     //send final hashed pw to pc
 
-                    String res = toHex(hash);
-                    Log.d("test", "after cipher:  : " + res);
-
-                    //send final hashed pw to pc
-                    ct.write(hash);
-                    Toast.makeText(ma, "Password successfully sent to PC!", Toast.LENGTH_SHORT).show();
-
+                    String res2 = toHex(mPassword.getBytes());
+                    Log.d("test", "AFTER combination:  : " + res2);
+                    ct.write(res2.getBytes());
                 } catch (Exception e) {
-                    System.out.println("Exception: Error in generating password"
+                    System.out.println("Exception: Error in generating password: "
                             + e.toString());
                 }
             return true;
@@ -218,6 +177,7 @@ public class pwfrag extends Fragment {
         protected void onPostExecute(final Boolean success) {
             mAuthTask = null;
           //showProgress.dismiss();
+            Toast.makeText(ma, "Password successfully sent to PC!", Toast.LENGTH_SHORT).show();
 
             if (success) {
                 //finish();
@@ -262,9 +222,5 @@ public class pwfrag extends Fragment {
      */
     public void setCt(ConnectedThread ct) {
         this.ct = ct;
-    }
-
-    public void setMa(MainActivity ma) {
-        this.ma = ma;
     }
 }

@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.example.simon.spaghettilock.MainActivity;
 import com.example.simon.spaghettilock.R;
@@ -19,8 +20,8 @@ import com.example.simon.spaghettilock.resources.ConnectedThread;
  * A simple {@link Fragment} subclass.
  */
 public class welcome extends Fragment {
-    private MainActivity ma;
     private ConnectedThread ct;
+    private MainActivity ma;
 
     public welcome() {
         // Required empty public constructor
@@ -41,11 +42,12 @@ public class welcome extends Fragment {
      * @param view
      */
     private void init(View view) {
+        ma = (MainActivity) getActivity();
         Button pwbt = (Button) view.findViewById(R.id.startPw);
         pwbt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-//                change fragment
+            //  change fragment
                 ma.createpwFrag(ct);
             }
         });
@@ -57,7 +59,7 @@ public class welcome extends Fragment {
                 FragmentTransaction ft = fm.beginTransaction();
                 ft.replace(R.id.fragContainer, new fingerfrag());
                 ft.commit();*/
-
+                Toast.makeText(ma, "You need to use Android M to use this feature!", Toast.LENGTH_SHORT).show();
                 //on click!
             }
         });
@@ -74,8 +76,8 @@ public class welcome extends Fragment {
     /**
      * set MainActivity obj
      * @param ma
-     */
+
     public void setMa(MainActivity ma) {
         this.ma = ma;
-    }
+    }  */
 }

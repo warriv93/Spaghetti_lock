@@ -32,8 +32,7 @@
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/button_box"
-
+            android:background="@mipmap/box"
             android:text="CONNECT COMPUTER"
             android:id="@+id/btConnect"
             android:height="80dp"

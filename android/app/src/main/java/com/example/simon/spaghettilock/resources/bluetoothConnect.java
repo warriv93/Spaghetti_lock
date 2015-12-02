@@ -3,9 +3,7 @@ package com.example.simon.spaghettilock.resources;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.util.Log;
-
 import com.example.simon.spaghettilock.MainActivity;
-
 import java.io.IOException;
 import java.util.UUID;
 
