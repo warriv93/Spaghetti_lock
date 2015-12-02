@@ -1,11 +1,6 @@
 package com.example.simon.spaghettilock.fragments;
 
-import android.app.Activity;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
-import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.util.Log;
@@ -14,25 +9,18 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.ListView;
-
 import com.example.simon.spaghettilock.MainActivity;
 import com.example.simon.spaghettilock.R;
-import com.example.simon.spaghettilock.resources.ConnectedThread;
-import com.example.simon.spaghettilock.resources.bluetoothConnect;
-
 
 public class startscreen extends Fragment {
     private ListView btlv;
-
+    private MainActivity ma;
 
     public startscreen() {
         // Required empty public constructor
     }
-
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -44,7 +32,7 @@ public class startscreen extends Fragment {
     }
 
     private void init(View view) {
-        MainActivity ma = (MainActivity) getActivity();
+        ma = (MainActivity) getActivity();
         if (view != null) {
             InputMethodManager imm = (InputMethodManager)ma.getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
@@ -58,18 +46,10 @@ public class startscreen extends Fragment {
         btConnect.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                ((MainActivity) getActivity()).listDevices();
+                ma.listDevices();
             }
         });
     }
-
-    /**
-     * set MainActivity obj
-     * @param ma
-     */
-//    public void setMa(MainActivity ma) {
-//        this.ma = ma;
-//    }
 
     /**
      * on list item click send device address and start bluetooth listening thread
@@ -95,8 +75,15 @@ public class startscreen extends Fragment {
             }
             String newinfo = info.substring(i).replaceAll(" ", "");
             Log.d("TEST", newinfo);
-            ((MainActivity) getActivity()).startBluetoothThread(newinfo);
-
+            ma.startBluetoothThread(newinfo);
         }
     }
+
+    /**
+     * set MainActivity obj
+     * @param ma
+
+    public void setMa(MainActivity ma) {
+        this.ma = ma;
+    }*/
 }

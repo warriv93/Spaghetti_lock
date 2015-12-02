@@ -5,6 +5,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
+import android.widget.Toast;
 import com.example.simon.spaghettilock.MainActivity;
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,14 +41,20 @@ public class ConnectedThread extends Thread{
      */
     public void run() {
         Log.d("TEST", "ConnectedThread CREATED");
-
+        Looper.prepare();
         byte[] buffer = new byte[1024];
         int begin = 0;
         int bytes = 0;
 
         //write "Connected" to connected server
         String msg = "Connected";
-        write(msg.getBytes());
+        byte[] one = "#msg#".getBytes();
+        byte[] two = msg.getBytes();
+        byte[] combined = new byte[one.length + two.length];
+        for (int i = 0; i < combined.length; ++i){
+            combined[i] = i < one.length ? one[i] : two[i - one.length];
+        }
+        write(combined);
 
         //infinit loop until connection fails
         while (true) {
@@ -56,6 +63,7 @@ public class ConnectedThread extends Thread{
                 bytes = mmInStream.read(buffer, 0, buffer.length);
                 String str = new String(buffer, 0, bytes, "UTF-8");
                 Log.d("test", "Receiving:  "+bytes+"       "+str);
+                Toast.makeText(ma, "Server: "+str, Toast.LENGTH_SHORT).show();
 //                for(int i = begin; i < bytes; i++) {
 //                    if(buffer[i] == "#".getBytes()[0]) {
 //                        mHandler.obtainMessage(1, begin, i, buffer).sendToTarget();

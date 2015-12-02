@@ -1,17 +1,12 @@
 package com.example.simon.spaghettilock.fragments;
 
-
-import android.app.FragmentManager;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Toast;
-
 import com.example.simon.spaghettilock.MainActivity;
 import com.example.simon.spaghettilock.R;
 
@@ -26,7 +21,6 @@ public class fingerfrag extends Fragment {
         // Required empty public constructor
     }
 
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -37,6 +31,7 @@ public class fingerfrag extends Fragment {
     }
 
     private void inti(View view) {
+        ma = (MainActivity) getActivity();
         ImageView ib = (ImageView) view.findViewById(R.id.imageViewFinger);
         ib.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -50,8 +45,8 @@ public class fingerfrag extends Fragment {
     /**
      * set MainActivity obj
      * @param ma
-     */
+
     public void setMa(MainActivity ma) {
         this.ma = ma;
-    }
+    }*/
 }

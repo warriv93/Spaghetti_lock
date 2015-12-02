@@ -5,12 +5,9 @@ import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 import com.example.simon.spaghettilock.fragments.pwfrag;
@@ -103,7 +100,7 @@ public class MainActivity extends Activity {
         FragmentTransaction ft = fm.beginTransaction();
         welcome w = new welcome();
         w.setCt(ct);
-        w.setMa(this);
+        //w.setMa(this);
         ft.replace(R.id.fragContainer, w);
         ft.addToBackStack(null).commit();
     }
@@ -115,7 +112,7 @@ public class MainActivity extends Activity {
         FragmentTransaction ft = fm.beginTransaction();
         pwfrag pwFrag = new pwfrag();
         pwFrag.setCt(ct);
-        pwFrag.setMa(this);
+        //pwFrag.setMa(this);
         ft.replace(R.id.fragContainer, pwFrag);
         ft.addToBackStack(null).commit();
     }
