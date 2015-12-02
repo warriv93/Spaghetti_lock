@@ -727,7 +727,6 @@ class Proximity (threading.Thread):
         self.State = _("gone")
         self.Simulate = False
         self.Stop = False
-        self.procid = 0
         self.dev_mac = self.config['device_mac']
         self.dev_channel = self.config['device_channel']
         self.ringbuffer_size = self.config['buffer_size']
@@ -740,8 +739,8 @@ class Proximity (threading.Thread):
         self.ErrorMsg = _("Initialized...")
         self.sock = None
         self.ignoreFirstTransition = True
-        self.logger = Logger()
-        self.logger.configureFromConfig(self.config)
+        #self.logger = Logger()
+        #self.logger.configureFromConfig(self.config)
     
     def get_device_list(self):
         # returns all active bluetooth devices found
