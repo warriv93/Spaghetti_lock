@@ -104,7 +104,46 @@ class Locker ():
 										if len(data) == 0: break
 										print ("received [%s]" % data)
 										
-										#client_sock.send(data)
+										msg = ""
+										try:
+											msg = data.decode()
+											print (msg)
+										except ValueError:
+											print ("Invalid message")
+											continue
+											
+										tokkens = msg.split('#')
+										if (len(tokkens) <= 0): continue
+										print(tokkens)
+										for i in range (1,len(tokkens), 2):
+											key = tokkens[i]
+											
+											if (i + 1 >= len(tokkens)): 
+												break;
+											
+											print (key)
+											
+											# Normal message, just ouput it
+											if (key == 'msg'):
+												print("Received message: " + tokkens[i+1])
+											
+											# Magic message, check key and if it matches, unlock 
+											# the screen
+											elif (key == 'magic'):
+												#print( (binascii.hexlify(config['magic']).decode()))
+												#print(tokkens[i+1])
+												#if (tokkens[i+1] == binascii.hexlify(config['magic']).decode()):
+												self.unlock_pc()
+												
+											# Loop message, just return the data to the sender
+											elif (key == 'loop'):
+												client_sock.send(data)
+												
+											else:
+												print('unknown message')
+											
+										#if (str != "#msg#Connected"): self.unlock_pc()
+										
 						except IOError:
 								pass
 
@@ -125,6 +164,10 @@ class Locker ():
 		def lock_pc(self):
 				print ("Locking PC")
 				ret_val = os.popen(self.config['lock_command']).readlines()
+				
+		def unlock_pc(self):
+				print ("Unlocking PC")
+				ret_val = os.popen(self.config['unlock_command']).readlines()
 
 ## Main part
 
@@ -156,8 +199,8 @@ if new_config:
 			if pass1 == pass2: break
 			else: print('Error: Passwords do not match')
 			
-		# Hash the new password and save it
-		dk = hashlib.pbkdf2_hmac('sha1', pass1.encode(), b'momsspaghetti', 10000, 64)
+		# Hash the new password and save it (https://docs.python.org/2/library/hashlib.html)
+		dk = hashlib.pbkdf2_hmac('sha1', pass1.encode(), b'momsspaghetti', 10000, 32)
 		config['magic'] = dk
 		print( binascii.hexlify(config['magic']))
 else:
