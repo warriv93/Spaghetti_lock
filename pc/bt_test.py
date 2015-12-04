@@ -1,6 +1,10 @@
 import hashlib
 import os
 import getpass
+import time
+import calendar
+from Crypto.Cipher import AES
+
 
 try:
 		from configobj import ConfigObj
@@ -23,18 +27,12 @@ except:
 ## Setup config file specs and defaults
 # This is the ConfigObj's syntax
 conf_specs = [
+		'accepted_clients=list(default=list(''C0:EE:FB:20:CC:51''))',
 		'uuid=string(default=''fa87c0d0-afac-11de-8a39-0800200c9a66'')',
 		'magic=string(default="")',
     'device_mac=string(max=17,default="")',
-    'device_channel=integer(1,30,default=7)',
-    'lock_distance=integer(0,127,default=7)',
-    'lock_duration=integer(0,120,default=6)',
-    'unlock_distance=integer(0,127,default=4)',
-    'unlock_duration=integer(0,120,default=1)',
     'lock_command=string(default=''gnome-screensaver-command -l'')',
     'unlock_command=string(default=''gnome-screensaver-command -d'')',
-    'proximity_command=string(default=''gnome-screensaver-command -p'')',
-    'proximity_interval=integer(5,600,default=60)',
     'log_to_syslog=boolean(default=True)',
     'log_syslog_facility=string(default=''local7'')',
     'log_to_file=boolean(default=False)',
@@ -44,135 +42,164 @@ conf_specs = [
 
 
 class Locker ():
-		def __init__(self,config):
-				self.config = config
-				self.Dist = -255
-				self.Simulate = False
-				self.Stop = False
-				self.dev_mac = self.config['device_mac']
-				self.dev_channel = self.config['device_channel']
-				self.gone_duration = self.config['lock_duration']
-				self.gone_limit = -self.config['lock_distance']
-				self.active_duration = self.config['unlock_duration']
-				self.active_limit = -self.config['unlock_distance']
-				self.sock = None
-				self.ignoreFirstTransition = True
-				#self.logger = Logger()
-				#self.logger.configureFromConfig(self.config)
-				self.accepted_clients = ['C0:EE:FB:20:CC:51']
-				self.uuid = self.config['uuid']
-				self.port = 0
-    
-
-		def create_connection(self):
-				# Create the RFCOMM bluetooth socket using any port number.
-				self.sock=BluetoothSocket( RFCOMM )
-				self.sock.bind(("",PORT_ANY))
-				self.sock.listen(1)
-
-				self.port = self.sock.getsockname()[1]
-
-				advertise_service( self.sock, "spaghetti_lock",
-						service_id = self.uuid,
-						service_classes = [ self.uuid, SERIAL_PORT_CLASS ],
-						profiles = [ SERIAL_PORT_PROFILE ]
-				)
-
-		def run(self):
-				self.create_connection()
-				print ("Waiting for connection on RFCOMM channel %d" % self.port)
-
-				while True:
-					# Enter the while loop and listen for connections
-					try:
-						client_sock, client_info = self.sock.accept()
-		
-						# Check the client address. If we don't know it, we just close the connection
-						if not any(client_info[0] in s for s in self.accepted_clients): 
-							print ("Denied connection from ", client_info)
-							client_sock.close()
-							continue
-		
-						# Ok, we got a connection request. Accept it and send welcome message.
-						print ("Accepted connection from ", client_info)
-						client_sock.settimeout(20.0)
-		
-						try:
-								client_sock.send('#msg#Hello! What\'s the magic word?')
-								while True:
-										data = client_sock.recv(1024)
-										if len(data) == 0: break
-										print ("received [%s]" % data)
-										
-										msg = ""
-										try:
-											msg = data.decode()
-											print (msg)
-										except ValueError:
-											print ("Invalid message")
-											continue
-											
-										tokkens = msg.split('#')
-										if (len(tokkens) <= 0): continue
-										print(tokkens)
-										for i in range (1,len(tokkens), 2):
-											key = tokkens[i]
-											
-											if (i + 1 >= len(tokkens)): 
-												break;
-											
-											print (key)
-											
-											# Normal message, just ouput it
-											if (key == 'msg'):
-												print("Received message: " + tokkens[i+1])
-											
-											# Magic message, check key and if it matches, unlock 
-											# the screen
-											elif (key == 'magic'):
-												#print( (binascii.hexlify(config['magic']).decode()))
-												#print(tokkens[i+1])
-												#if (tokkens[i+1] == binascii.hexlify(config['magic']).decode()):
-												self.unlock_pc()
-												
-											# Loop message, just return the data to the sender
-											elif (key == 'loop'):
-												client_sock.send(data)
-												
-											else:
-												print('unknown message')
-											
-										#if (str != "#msg#Connected"): self.unlock_pc()
-										
-						except IOError:
-								pass
-
-						print ("disconnected", client_info)
-
-						client_sock.close()
+	def __init__(self,config):
+			self.config = config
+			self.Stop = False
+			self.dev_mac = self.config['device_mac']
+			self.sock = None
+			#self.logger = Logger()
+			#self.logger.configureFromConfig(self.config)
+			self.accepted_clients = self.config['accepted_clients']
+			self.uuid = self.config['uuid']
+			self.port = 0
 	
-					except KeyboardInterrupt:
-						break
-						
-					# Close socket and quit
-				stop_advertising(self.sock)
-				self.sock.close()
+	# create_connection(): Setup the bluetooth socket and advertise
+	# the SDP service.
+	def create_connection(self):
+			# Create the RFCOMM bluetooth socket using any port number.
+			# Bluetooth connection is always encrypted (security mechanism 1)
+			self.sock=BluetoothSocket( RFCOMM )
+			self.sock.bind(("",PORT_ANY))
+			self.sock.listen(1)
 
-				print ("cleaning up...")
-				return 0
+			self.port = self.sock.getsockname()[1]
 
-		def lock_pc(self):
-				print ("Locking PC")
-				ret_val = os.popen(self.config['lock_command']).readlines()
+			advertise_service( self.sock, "spaghetti_lock",
+					service_id = self.uuid,
+					service_classes = [ self.uuid, SERIAL_PORT_CLASS ],
+					profiles = [ SERIAL_PORT_PROFILE ]
+			)
+
+	# run(): THis is the main loop function which trys to receive data,
+	# parses received messages and takes appropriate actions.
+	def run(self):
+		self.create_connection()
+		print ("Waiting for connection on RFCOMM channel %d" % self.port)
+		while True:
+			# Enter the while loop and listen for connections
+			try:
+				client_sock, client_info = self.sock.accept()
+
+				# Check the client address. If we don't know it, we just close the 
+				# connection (security mechanism 3).
+				if not any(client_info[0] in s for s in self.accepted_clients): 
+					print ("Denied connection from ", client_info)
+					client_sock.close()
+					continue
+
+				# Ok, we got a connection request. Accept it and send 
+				# welcome message.
+				print ("Accepted connection from ", client_info)
+				client_sock.settimeout(20.0)
+
+				try:
+					client_sock.send('#msg#Hello! What\'s the magic word?')
+					while True:
+						# Try to receive data
+						data = client_sock.recv(1024)
+						if len(data) == 0: break
+						#print ("received [%s]" % data)
+						# Decode the message and try to convert it form bytes to 
+						# a string.
+						data = self.decode_msg(data)
+						msg = ""
+						try:
+							msg = data.decode()
+						except ValueError:
+							print ("Invalid message")
+							continue
+							
+						msg = self.remove_padding(msg)
+						tokkens = msg.split('#')
+						if (len(tokkens) <= 0): continue
+						# Loop through message and look for known key words
+						for i in range (1,len(tokkens), 2):
+							key = tokkens[i]
+							
+							if (i + 1 >= len(tokkens)): 
+								break;
+							
+							# Normal message, just ouput it
+							if (key == 'msg'):
+								print("Received message: " + tokkens[i+1])
+							
+							# Magic message, check key and if it matches, unlock 
+							# the screen
+							elif (key == 'magic'):
+								if (tokkens[i+1] == config['magic']):
+									self.unlock_pc()
+								else: 
+									print('received wrong password')
+								
+							# Loop message, just return the data to the sender
+							elif (key == 'loop'):
+								client_sock.send(data)
+								
+							else:
+								print('unknown message')
+							
+				except IOError:
+						pass
+
+				print ("disconnected", client_info)
+
+				client_sock.close()
+
+			except KeyboardInterrupt:
+				break
 				
-		def unlock_pc(self):
-				print ("Unlocking PC")
-				ret_val = os.popen(self.config['unlock_command']).readlines()
+		# Close socket and quit
+		stop_advertising(self.sock)
+		self.sock.close()
+
+		print ("cleaning up...")
+		return 0
+			
+	# remove_padding: Messages are padded with '#' to the next value of
+	# AES.block_size. Remove all '#' at the end of the message.
+	def remove_padding(self, msg):
+		while (len(msg) > 0 and msg[len(msg)-1] == '#'):
+			msg = msg[:-1]
+		return msg
+
+	# lock_pc(): Lock the the PC using the command from the configuration file
+	def lock_pc(self):
+		print ("Locking PC")
+		ret_val = os.popen(self.config['lock_command']).readlines()
+			
+	# unlock_pc(): Unlock the PC using the command from the configuration
+	# file. 
+	def unlock_pc(self):
+		print ("Unlocking PC")
+		ret_val = os.popen(self.config['unlock_command']).readlines()
+			
+	# decode_msg(): Try to decode the received message using the current time
+	# as AES key. 
+	def decode_msg(self, msg):
+		# First, generate the key based on current time. We use three 
+		# tries (3 consecutive second values) to decode the message
+		base = calendar.timegm(time.gmtime()) - 3
+		for i in range(0,5):
+			key = str(base)
+			while (len(key) < 16): key = key + '0'
+			iv = str(base)
+			while (len(iv) < AES.block_size): iv = iv + '0'
+			
+			try:
+				cipher = AES.new(key.encode(), AES.MODE_CBC, iv.encode())
+				data = cipher.decrypt(msg)
+			except ValueError:
+				print('decryption failed')
+				
+			# Check if the first character is '#'. If yes, we assume that
+			# decoding was successful
+			if (data[0] == 35): break
+			# Increase key by one (one second later) and try again
+			base = base + 1
+			
+		return data
 
 ## Main part
-
-# react on ^C
-#signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 new_config = False
 config_file = os.getenv('HOME') + '/.locker/standard.conf'
@@ -201,8 +228,7 @@ if new_config:
 			
 		# Hash the new password and save it (https://docs.python.org/2/library/hashlib.html)
 		dk = hashlib.pbkdf2_hmac('sha1', pass1.encode(), b'momsspaghetti', 10000, 32)
-		config['magic'] = dk
-		print( binascii.hexlify(config['magic']))
+		config['magic'] = binascii.hexlify(dk).decode()
 else:
 		print ('Found config in ' + config_file)
 		
