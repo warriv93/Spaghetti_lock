@@ -9,7 +9,8 @@ import java.util.UUID;
 
 /**
  * Created by simon on 15. 11. 7.
- * This class represents the Thread that is created if a
+ * This class represents the Thread that will listen for a bluetooth connection
+ * to the designated PC.
  */
 public class bluetoothConnect extends Thread {
         private final BluetoothSocket mmSocket;

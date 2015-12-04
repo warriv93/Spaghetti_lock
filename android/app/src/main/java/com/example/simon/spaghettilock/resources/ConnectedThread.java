@@ -22,6 +22,8 @@ import javax.crypto.spec.SecretKeySpec;
 /**
  * Created by simon on 15. 11. 23.
  * This class represents a Connected (Thread) Bluetooth client
+ * When a connection to the PC is established this thread will handle all the READ and WRITE
+ * to and from the PC
  */
 public class ConnectedThread extends Thread{
     private final BluetoothSocket mmSocket;

@@ -19,7 +19,8 @@ import java.util.Set;
 
 /**
  * Author Simon Gullstrand
- * The main controller class for my applicaiton. It handles and controlls most of if not all the basic UI thread tasks.
+ * The main controller class for my application.
+ * It handles and controls most of if not all the basic UI thread tasks.
  */
 public class MainActivity extends Activity {
     public static BluetoothAdapter mBluetoothAdapter;

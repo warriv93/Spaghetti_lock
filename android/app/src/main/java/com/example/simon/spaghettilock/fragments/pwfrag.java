@@ -203,7 +203,7 @@ public class pwfrag extends Fragment {
     }
 
 /**
- * translate input byte array to hex
+ * Translate input byte array to hex
  */
     public static String toHex(byte[] bytes) {
         char[] hexChars = new char[bytes.length * 2];
