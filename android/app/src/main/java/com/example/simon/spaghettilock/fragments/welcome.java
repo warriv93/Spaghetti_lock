@@ -1,12 +1,14 @@
 package com.example.simon.spaghettilock.fragments;
 
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.example.simon.spaghettilock.MainActivity;
@@ -43,6 +45,10 @@ public class welcome extends Fragment {
      */
     private void init(View view) {
         ma = (MainActivity) getActivity();
+        //set background background
+        RelativeLayout welcomeLayout = (RelativeLayout) view.findViewById(R.id.welcomeLayout);
+        welcomeLayout.setBackgroundColor(Color.WHITE);
+        //setup buttons
         Button pwbt = (Button) view.findViewById(R.id.startPw);
         pwbt.setOnClickListener(new View.OnClickListener() {
             @Override

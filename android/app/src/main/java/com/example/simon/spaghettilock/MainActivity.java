@@ -17,6 +17,10 @@ import com.example.simon.spaghettilock.resources.ConnectedThread;
 import com.example.simon.spaghettilock.resources.bluetoothConnect;
 import java.util.Set;
 
+/**
+ * Author Simon Gullstrand
+ * The main controller class for my applicaiton. It handles and controlls most of if not all the basic UI thread tasks.
+ */
 public class MainActivity extends Activity {
     public static BluetoothAdapter mBluetoothAdapter;
     private final static int REQUEST_ENABLE_BT = 1;
@@ -54,6 +58,9 @@ public class MainActivity extends Activity {
         if (mBluetoothAdapter == null) {
             // Device does not support Bluetooth
             Toast.makeText(this, "This device does not support Bluetooth.", Toast.LENGTH_SHORT).show();
+        }else if(mBluetoothAdapter.isEnabled()){
+            Toast.makeText(getApplicationContext(), "Bluetooth is enabled.",
+                    Toast.LENGTH_LONG).show();
         }
         //force start bluetooth adapter
         if (!mBluetoothAdapter.isEnabled()) {
@@ -127,7 +134,9 @@ public class MainActivity extends Activity {
         ft.replace(R.id.fragContainer, sc).addToBackStack(null).commit();
     }
 
-
+    /**
+     * On devices back button pressed go back one fragment in history.
+     */
     @Override
     public void onBackPressed() {
         if(getFragmentManager().getBackStackEntryCount() == 0) {

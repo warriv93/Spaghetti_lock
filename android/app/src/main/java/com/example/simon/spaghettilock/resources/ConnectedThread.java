@@ -10,6 +10,13 @@ import com.example.simon.spaghettilock.MainActivity;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+
+import javax.crypto.Cipher;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 
 
 /**
@@ -87,14 +94,55 @@ public class ConnectedThread extends Thread{
     /**
      *  Write to server
      */
-    public void write(byte[] bytes) {
+    public void write(byte[] msg) {
         try {
             //save byte encoded with UTF-8 to a string to be able to print
-            String str = new String(bytes, "UTF-8");
-            Log.d("test", "SENDING: " + str);
+            String str = new String(msg, "UTF-8");
+            Log.d("test", "before encrypt, SENDING: " + str);
+
+            //generate current time in secounds
+            Calendar c = Calendar.getInstance();
+            Long seconds = System.currentTimeMillis()/1000;
+            String pwtime = Long.toString(seconds);
+            while(pwtime.length()<16){
+                pwtime+="0";
+            }
+            Log.d("test", "encryption key: " + pwtime);
+            //run the encryption algorithms
+            while(str.length()%32!=0){
+                str+="#";
+            }
+            Log.d("test", "encryption key: " + str);
+
+            byte[] encryptedMsg = encrypt(pwtime.getBytes(), str.getBytes());
+
+            String str2 = new String(encryptedMsg, "UTF-8");
+            Log.d("test", "After encrypt, SENDING: " + str2);
             //send bytes to connected host
-            mmOutStream.write(bytes);
-        } catch (IOException e) { }
+            mmOutStream.write(encryptedMsg);
+        } catch (IOException e) {
+            e.printStackTrace();
+            } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Performing and encryption with AES, CBC and NoPadding
+     * @param raw
+     * @param msg
+     * @return
+     * @throws Exception
+     */
+    private static byte[] encrypt(byte[] raw, byte[] msg) throws Exception {
+       //Init IV vector
+        String IV = new String(raw, "UTF-8");
+
+        SecretKeySpec skeySpec = new SecretKeySpec(raw, "AES/CBC/NoPadding");
+        Cipher cipher = Cipher.getInstance("AES/CBC/NoPadding");
+        cipher.init(Cipher.ENCRYPT_MODE, skeySpec, new IvParameterSpec(IV.getBytes()));
+        byte[] encrypted = cipher.doFinal(msg);
+        return encrypted;
     }
 
     /**

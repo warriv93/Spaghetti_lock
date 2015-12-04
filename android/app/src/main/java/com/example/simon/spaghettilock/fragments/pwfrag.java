@@ -1,6 +1,7 @@
 package com.example.simon.spaghettilock.fragments;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.Fragment;
@@ -12,6 +13,7 @@ import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 import com.example.simon.spaghettilock.MainActivity;
 import com.example.simon.spaghettilock.R;
@@ -19,7 +21,12 @@ import com.example.simon.spaghettilock.resources.ConnectedThread;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
+
 /**
+ * This is the fragment that holds the Password input. and here is also a inner AsyncTask that handles the password hashing attempt.
+ * And then sends it to the ConnectedThread (Bluetooth connection) to send it to the connected PC.
  * A simple {@link Fragment} subclass.
  */
 public class pwfrag extends Fragment {
@@ -28,7 +35,7 @@ public class pwfrag extends Fragment {
     private EditText pwet;
     private UserLoginTask mAuthTask = null;
     private ConnectedThread ct;
-    final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
+    final protected static char[] hexArray = "0123456789abcdef".toCharArray();
 
 
     public pwfrag() {
@@ -44,11 +51,19 @@ public class pwfrag extends Fragment {
         inti(view);
         return view;
     }
-
+    /**
+     * Init all the needed components for this fragment
+     * @param view
+     */
     private void inti(View view) {
         ma = (MainActivity) getActivity();
+        //set background background
+        RelativeLayout pwLayout = (RelativeLayout) view.findViewById(R.id.pwLayout);
+        pwLayout.setBackgroundColor(Color.WHITE);
         pwet = (EditText) view.findViewById(R.id.password);
-        //pwet.setText("passwordpassword");
+        pwet.setText("passwordpassword");
+
+        //while something is inputed into the edittext.
 //        pwet.setOnEditorActionListener(new TextView.OnEditorActionListener() {
 //            @Override
 //            public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
@@ -136,36 +151,29 @@ public class pwfrag extends Fragment {
                     //getSalt();
 
                 //char array of password, byte array of salt, 10000 iterations, 512 bits (64bytes)
-                   /* PBEKeySpec spec = new PBEKeySpec(chars, salt, 10000,
-                           512);
+                    PBEKeySpec spec = new PBEKeySpec(chars, salt, 10000,
+                           256);
                     SecretKeyFactory skf = SecretKeyFactory
                             .getInstance("PBKDF2WithHmacSHA1");
                     byte[] hash = skf.generateSecret(spec).getEncoded();
-                   // String res1 = toHex(hash);
-                    String res1 = new String(hash, "UTF-8");
+                    String res1 = toHex(hash);
+                    //String res1 = new String(hash, "UTF-8");
                     Log.d("test", "before cipher:  : " + res1);
-                        */
 
-                    //TIME
-                    SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
-                    String currentDateandTime = sdf.format(new Date());
-                    String pwtime = currentDateandTime;
-
-                    /*
                     //merges 2 byte[] together
                     byte[] one = "#magic#".getBytes();
-                    byte[] two = hash;
+                    byte[] two = res1.getBytes();
                     String str = new String(one, "UTF-8");
                     Log.d("test", "magic?: " + one);
                     byte[] combined = new byte[one.length + two.length];
                     for (int i = 0; i < combined.length; ++i){
                         combined[i] = i < one.length ? one[i] : two[i - one.length];
-                    }*/
+                    }
                      //send final hashed pw to pc
 
-                    String res2 = toHex(mPassword.getBytes());
+                    String res2 = toHex(res1.getBytes());
                     Log.d("test", "AFTER combination:  : " + res2);
-                    ct.write(res2.getBytes());
+                    ct.write(combined);
                 } catch (Exception e) {
                     System.out.println("Exception: Error in generating password: "
                             + e.toString());

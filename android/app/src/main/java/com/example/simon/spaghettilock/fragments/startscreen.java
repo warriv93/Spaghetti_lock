@@ -1,6 +1,7 @@
 package com.example.simon.spaghettilock.fragments;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.util.Log;
@@ -11,9 +12,14 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
+
 import com.example.simon.spaghettilock.MainActivity;
 import com.example.simon.spaghettilock.R;
 
+/**
+ * This Fragment is the first fragment that is showen to the user.
+ */
 public class startscreen extends Fragment {
     private ListView btlv;
     private MainActivity ma;
@@ -31,8 +37,16 @@ public class startscreen extends Fragment {
         return view;
     }
 
+    /**
+     * Init all the needed components for this fragment
+     * @param view
+     */
     private void init(View view) {
         ma = (MainActivity) getActivity();
+        //set background background
+        RelativeLayout startLayout = (RelativeLayout) view.findViewById(R.id.startLayout);
+        startLayout.setBackgroundColor(Color.WHITE);
+
         if (view != null) {
             InputMethodManager imm = (InputMethodManager)ma.getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
@@ -78,12 +92,4 @@ public class startscreen extends Fragment {
             ma.startBluetoothThread(newinfo);
         }
     }
-
-    /**
-     * set MainActivity obj
-     * @param ma
-
-    public void setMa(MainActivity ma) {
-        this.ma = ma;
-    }*/
 }
