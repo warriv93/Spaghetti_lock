@@ -32,3 +32,5 @@ We there for decided to keep this in a seperate repository, and implement it in 
 The Password part of our application is also built for Android and written in Java. The application contains basically one main controller which has all the logic for the applications UI Thread. 
 It has 4 fragments which represents the different pages with layout and basic lagic. In the Password fragment there is some logic for hashing the password in a ASyncTask.
 There is also 2 Thread classes. First one is for listening for a connection with the PC. The second one represents a Connected (Thread) Bluetooth client. When a connection to the PC is established this thread will handle all the READ and WRITE to and from the PC.
+
+![lock](http://simon.brasse-pc.eu/portfolio/images/lock/lock.jpg)
