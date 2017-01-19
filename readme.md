@@ -1,4 +1,5 @@
 # Spaghetti Lock
+This project was part of our Information Security class while we where on an exchange semester at Korea University in Korea.
 
 The goal of this project is to develop a smartphone app as well as a PC tool that allows a user to unlock his/her PC with his/her phone. We are using Ubuntu 14.04 or Ubuntu 15.04 for this project. If you don't want to install it natively on your PC, please used Virtual Box to run Ubuntu in a virtual machine. 
 
